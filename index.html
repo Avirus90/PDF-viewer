@@ -8,6 +8,7 @@ body {
   font-family: Arial;
 }
 
+/* Top bar */
 .topbar {
   display: flex;
   gap: 8px;
@@ -34,6 +35,7 @@ button {
   border-radius: 5px;
 }
 
+/* Viewer */
 #viewerContainer {
   height: calc(100vh - 60px);
   overflow: auto;
@@ -41,23 +43,33 @@ button {
   text-align: center;
 }
 
+/* Pages */
 .page {
   margin: 10px auto;
   display: block;
   background: white;
   box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
+
+/* 🔥 Fake Fullscreen */
+body.fullscreen .topbar {
+  display: none;
+}
+
+body.fullscreen #viewerContainer {
+  height: 100vh;
+}
 </style></head><body><div class="topbar">
   <input id="pdfUrl" placeholder="Paste Worker PDF URL..." />
   <button onclick="loadPDF()">View</button>
-  <button onclick="goFullScreen()">⛶</button>
+  <button onclick="toggleFull()">⛶</button>
 </div><div id="viewerContainer"></div><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><script>
 let pdfDoc = null;
 const container = document.getElementById("viewerContainer");
 
 // 🔥 Load PDF
 function loadPDF() {
-  const url = document.getElementById("pdfUrl").value.trim();
+  let url = document.getElementById("pdfUrl").value.trim();
   if (!url) return alert("Enter PDF URL");
 
   container.innerHTML = "";
@@ -71,7 +83,7 @@ function loadPDF() {
   });
 }
 
-// ⚡ HIGH QUALITY + NATURAL SIZE
+// ⚡ High clarity render
 function renderPage(num) {
   pdfDoc.getPage(num).then(page => {
 
@@ -84,7 +96,6 @@ function renderPage(num) {
     canvas.width = viewport.width;
     canvas.height = viewport.height;
 
-    // 🔥 IMPORTANT: NO width:100%
     canvas.classList.add("page");
 
     container.appendChild(canvas);
@@ -96,13 +107,9 @@ function renderPage(num) {
   });
 }
 
-// 🔳 Fullscreen
-function goFullScreen() {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen();
-  } else {
-    document.exitFullscreen();
-  }
+// 🔳 Fake Fullscreen (PINCH WORKING)
+function toggleFull() {
+  document.body.classList.toggle("fullscreen");
 }
 
 // 🚫 Disable right click
