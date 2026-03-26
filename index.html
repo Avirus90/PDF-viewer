@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>OdiGyan PDF Viewer</title><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes"><style>
+<title>OdiGyan PDF Viewer</title><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"><style>
 body {
   margin: 0;
   background: #111;
@@ -38,6 +38,7 @@ button {
   height: calc(100vh - 60px);
   overflow: auto;
   -webkit-overflow-scrolling: touch;
+  text-align: center;
 }
 
 .page {
@@ -70,11 +71,11 @@ function loadPDF() {
   });
 }
 
-// ⚡ HIGH QUALITY RENDER
+// ⚡ HIGH QUALITY + NATURAL SIZE
 function renderPage(num) {
   pdfDoc.getPage(num).then(page => {
 
-    const scale = window.devicePixelRatio * 1.5; // 🔥 clarity boost
+    const scale = window.devicePixelRatio * 1.5;
     const viewport = page.getViewport({ scale });
 
     const canvas = document.createElement("canvas");
@@ -83,9 +84,7 @@ function renderPage(num) {
     canvas.width = viewport.width;
     canvas.height = viewport.height;
 
-    canvas.style.width = "100%";
-    canvas.style.height = "auto";
-
+    // 🔥 IMPORTANT: NO width:100%
     canvas.classList.add("page");
 
     container.appendChild(canvas);
