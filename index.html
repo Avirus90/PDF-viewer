@@ -8,7 +8,7 @@ body {
   font-family: Arial;
 }
 
-/* Top bar */
+/* Topbar */
 .topbar {
   display: flex;
   gap: 8px;
@@ -51,7 +51,7 @@ button {
   box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
-/* 🔥 Fake Fullscreen */
+/* Fake fullscreen */
 body.fullscreen .topbar {
   display: none;
 }
@@ -67,7 +67,7 @@ body.fullscreen #viewerContainer {
 let pdfDoc = null;
 const container = document.getElementById("viewerContainer");
 
-// 🔥 Load PDF
+// 🚀 Load PDF
 function loadPDF() {
   let url = document.getElementById("pdfUrl").value.trim();
   if (!url) return alert("Enter PDF URL");
@@ -83,18 +83,30 @@ function loadPDF() {
   });
 }
 
-// ⚡ High clarity render
+// 🔥 FIT TO SCREEN + SHARP RENDER
 function renderPage(num) {
   pdfDoc.getPage(num).then(page => {
 
-    const scale = window.devicePixelRatio * 1.5;
-    const viewport = page.getViewport({ scale });
+    const containerWidth = container.clientWidth;
+
+    const viewport = page.getViewport({ scale: 1 });
+
+    // 🔥 Auto fit width
+    let scale = containerWidth / viewport.width;
+
+    // 🔥 Slight clarity boost
+    scale = scale * window.devicePixelRatio;
+
+    const scaledViewport = page.getViewport({ scale });
 
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
 
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
+    canvas.width = scaledViewport.width;
+    canvas.height = scaledViewport.height;
+
+    canvas.style.width = containerWidth + "px";
+    canvas.style.height = "auto";
 
     canvas.classList.add("page");
 
@@ -102,12 +114,12 @@ function renderPage(num) {
 
     page.render({
       canvasContext: ctx,
-      viewport: viewport
+      viewport: scaledViewport
     });
   });
 }
 
-// 🔳 Fake Fullscreen (PINCH WORKING)
+// 🔳 Fake fullscreen (pinch works)
 function toggleFull() {
   document.body.classList.toggle("fullscreen");
 }
