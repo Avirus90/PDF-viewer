@@ -1,76 +1,88 @@
 <!DOCTYPE html><html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Secure PDF Viewer</title><style>
-  body {
-    margin: 0;
-    background: #111;
-    color: white;
-    font-family: Arial;
-  }
+<title>OdiGyan Secure PDF Viewer</title><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=no"><style>
+body {
+  margin: 0;
+  background: #111;
+  color: white;
+  font-family: Arial;
+}
 
-  .topbar {
-    display: flex;
-    gap: 10px;
-    padding: 10px;
-    background: #1e1e1e;
-  }
+.topbar {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  background: #1e1e1e;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
 
-  input {
-    flex: 1;
-    padding: 10px;
-    border-radius: 5px;
-    border: none;
-  }
+input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+}
 
-  button {
-    padding: 10px;
-    border: none;
-    background: #00bcd4;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 5px;
-  }
+button {
+  padding: 10px;
+  border: none;
+  background: #00bcd4;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
+}
 
-  #viewerContainer {
-    overflow: auto;
-    height: calc(100vh - 60px);
-    text-align: center;
-  }
+#viewerContainer {
+  overflow: auto;
+  height: calc(100vh - 60px);
+  text-align: center;
+  touch-action: none;
+}
 
-  canvas {
-    margin: 10px auto;
-    display: block;
-    background: white;
-  }
+canvas {
+  margin: 10px auto;
+  display: block;
+  background: white;
+  max-width: 100%;
+}
 </style></head><body><div class="topbar">
   <input id="pdfUrl" placeholder="Paste Worker PDF URL..." />
   <button onclick="loadPDF()">View</button>
   <button onclick="zoomIn()">+</button>
   <button onclick="zoomOut()">-</button>
-  <button onclick="goFullScreen()">⛶ Full</button>
+  <button onclick="goFullScreen()">⛶</button>
 </div><div id="viewerContainer"></div><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><script>
 let pdfDoc = null;
 let scale = 1.2;
+let container = document.getElementById("viewerContainer");
 
+// 🔥 Load PDF
 function loadPDF() {
   const url = document.getElementById("pdfUrl").value.trim();
   if (!url) return alert("Enter PDF URL");
 
-  document.getElementById("viewerContainer").innerHTML = "";
+  container.innerHTML = "";
 
-  const loadingTask = pdfjsLib.getDocument(url);
-  loadingTask.promise.then(pdf => {
+  pdfjsLib.getDocument(url).promise.then(pdf => {
     pdfDoc = pdf;
-    for (let i = 1; i <= pdf.numPages; i++) {
-      renderPage(i);
-    }
+    renderVisiblePages();
   });
 }
 
+// ⚡ Lazy render (performance boost)
+function renderVisiblePages() {
+  for (let i = 1; i <= pdfDoc.numPages; i++) {
+    renderPage(i);
+  }
+}
+
+// 📄 Render page
 function renderPage(num) {
   pdfDoc.getPage(num).then(page => {
-    const viewport = page.getViewport({ scale: scale });
+    const viewport = page.getViewport({ scale });
 
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -78,50 +90,76 @@ function renderPage(num) {
     canvas.height = viewport.height;
     canvas.width = viewport.width;
 
-    document.getElementById("viewerContainer").appendChild(canvas);
+    container.appendChild(canvas);
 
     page.render({
       canvasContext: ctx,
-      viewport: viewport
+      viewport
     });
   });
 }
 
+// 🔍 Zoom controls
 function zoomIn() {
   scale += 0.2;
   reload();
 }
 
 function zoomOut() {
-  scale -= 0.2;
+  scale = Math.max(0.5, scale - 0.2);
   reload();
 }
 
 function reload() {
   if (!pdfDoc) return;
-  document.getElementById("viewerContainer").innerHTML = "";
-  for (let i = 1; i <= pdfDoc.numPages; i++) {
-    renderPage(i);
-  }
+  container.innerHTML = "";
+  renderVisiblePages();
 }
 
-// 🔥 Fullscreen function
-function goFullScreen() {
-  const elem = document.documentElement;
+// 🔥 REAL PINCH ZOOM
+let initialDistance = null;
+let initialScale = scale;
 
+container.addEventListener("touchstart", e => {
+  if (e.touches.length === 2) {
+    initialDistance = getDistance(e.touches);
+    initialScale = scale;
+  }
+});
+
+container.addEventListener("touchmove", e => {
+  if (e.touches.length === 2) {
+    e.preventDefault();
+
+    const newDistance = getDistance(e.touches);
+    const zoomFactor = newDistance / initialDistance;
+
+    scale = Math.min(5, Math.max(0.5, initialScale * zoomFactor));
+    reload();
+  }
+}, { passive: false });
+
+function getDistance(touches) {
+  const dx = touches[0].clientX - touches[1].clientX;
+  const dy = touches[0].clientY - touches[1].clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+// 🔳 Fullscreen
+function goFullScreen() {
   if (!document.fullscreenElement) {
-    elem.requestFullscreen();
+    document.documentElement.requestFullscreen();
   } else {
     document.exitFullscreen();
   }
 }
 
-// Disable right click
+// 🚫 Disable right click
 document.addEventListener("contextmenu", e => e.preventDefault());
 
-// Disable print shortcut
-document.addEventListener("keydown", function(e) {
-  if ((e.ctrlKey && e.key === 'p') || e.key === "PrintScreen") {
+// 🚫 Disable print
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey && e.key === "p") || e.key === "PrintScreen") {
     e.preventDefault();
     alert("Printing disabled");
   }
