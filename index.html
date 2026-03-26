@@ -48,7 +48,8 @@
   <button onclick="loadPDF()">View</button>
   <button onclick="zoomIn()">+</button>
   <button onclick="zoomOut()">-</button>
-</div><div id="viewerContainer"></div><!-- PDF.js CDN --><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><script>
+  <button onclick="goFullScreen()">⛶ Full</button>
+</div><div id="viewerContainer"></div><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><script>
 let pdfDoc = null;
 let scale = 1.2;
 
@@ -61,7 +62,6 @@ function loadPDF() {
   const loadingTask = pdfjsLib.getDocument(url);
   loadingTask.promise.then(pdf => {
     pdfDoc = pdf;
-
     for (let i = 1; i <= pdf.numPages; i++) {
       renderPage(i);
     }
@@ -102,6 +102,17 @@ function reload() {
   document.getElementById("viewerContainer").innerHTML = "";
   for (let i = 1; i <= pdfDoc.numPages; i++) {
     renderPage(i);
+  }
+}
+
+// 🔥 Fullscreen function
+function goFullScreen() {
+  const elem = document.documentElement;
+
+  if (!document.fullscreenElement) {
+    elem.requestFullscreen();
+  } else {
+    document.exitFullscreen();
   }
 }
 
