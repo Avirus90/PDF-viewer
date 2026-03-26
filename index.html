@@ -1,0 +1,66 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OdiGyan PDF Viewer</title><style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: white;
+  }
+
+  .topbar {
+    display: flex;
+    padding: 10px;
+    background: #1e1e1e;
+    gap: 10px;
+  }
+
+  input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+  }
+
+  button {
+    padding: 10px 15px;
+    border: none;
+    background: #00bcd4;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+
+  iframe {
+    width: 100%;
+    height: calc(100vh - 60px);
+    border: none;
+  }
+</style></head><body><div class="topbar">
+  <input id="pdfUrl" placeholder="Paste your Worker PDF URL here..." />
+  <button onclick="loadPDF()">View</button>
+</div><iframe id="viewer"></iframe><script>
+function loadPDF() {
+  let url = document.getElementById("pdfUrl").value.trim();
+
+  if (!url) {
+    alert("Please enter PDF URL");
+    return;
+  }
+
+  // Auto fix (agar user direct file name dale)
+  if (!url.startsWith("http")) {
+    url = "https://pdfviewer.bimbadharbaghel0.workers.dev/" + url;
+  }
+
+  const viewerUrl =
+    "https://mozilla.github.io/pdf.js/web/viewer.html?file=" +
+    encodeURIComponent(url);
+
+  document.getElementById("viewer").src = viewerUrl;
+}
+</script></body>
+</html>
